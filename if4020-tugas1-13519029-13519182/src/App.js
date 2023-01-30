@@ -4,8 +4,8 @@ import emptyCheckbox from './images/checkbox-inactive-yellow.png';
 import filledCheckbox from './images/checkbox-active-yellow.png';
 
 import {
-  vigenereCipher,
-  vigenereDecipher,
+  useCipher,
+  useDecipher,
 } from './cipher';
 
 import {
@@ -18,6 +18,8 @@ import './App.css';
 const App = () => {
   const fileInputPlainRef = useRef(null);
   const fileInputCipherRef = useRef(null);
+  
+  const [cipherMode, setCipherMode] = useState('vigenere');
 
   const [inputPlainText, setInputPlainText] = useState('');
   const [inputCipherKey, setInputCipherKey] = useState('');
@@ -25,6 +27,9 @@ const App = () => {
 
   const [inputCipherText, setInputCipherText] = useState('');
   const [inputDecipherKey, setInputDecipherKey] = useState('');
+
+  const cipher = useCipher(cipherMode);
+  const decipher = useDecipher(cipherMode);
 
   const readPlainFile = (e) => {
     if(e.target.value === '') {
@@ -60,6 +65,14 @@ const App = () => {
 
   return (
     <div className="App">
+      <select
+        id="dropdown"
+        onChange={(e) => setCipherMode(e.target.value)}
+      >
+        <option value="vigenere">Vigenere</option>
+        <option value="autoVigenere">Auto Vigenere</option>
+      </select>
+
       <div id='title'>
         Cipher Part
       </div>
@@ -102,13 +115,13 @@ const App = () => {
       </div>
       <div id='resultTextContainer'>
         {isShowPerFiveLetters && (
-          separatePerFiveLetters(vigenereCipher({
+          separatePerFiveLetters(cipher({
             text: removeNonalphabet(inputPlainText),
             key: inputCipherKey || 'a',
           }))
         )}
         {!isShowPerFiveLetters && (
-          vigenereCipher({
+          cipher({
             text: removeNonalphabet(inputPlainText),
             key: inputCipherKey || 'a',
           })
@@ -175,7 +188,7 @@ const App = () => {
         Deciphered Text:  
       </div>
       <div id='resultTextContainer'>
-        {vigenereDecipher({
+        {decipher({
           text: removeNonalphabet(inputCipherText),
           key: inputDecipherKey || 'a',
         })}

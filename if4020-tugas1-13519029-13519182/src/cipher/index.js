@@ -56,7 +56,7 @@ const numToAlphabet = {
   25: 'z',
 };
 
-export const vigenereCipher = ({text, key}) => {
+const vigenereCipher = ({text, key}) => {
   const lowercasedText = text.toLowerCase();
   const lowercasedKey = key.toLowerCase();
   let result = '';
@@ -72,7 +72,7 @@ export const vigenereCipher = ({text, key}) => {
   return result;
 }
 
-export const vigenereDecipher = ({text, key}) => {
+const vigenereDecipher = ({text, key}) => {
   const lowercasedText = text.toLowerCase();
   const lowercasedKey = key.toLowerCase();
   let result = '';
@@ -88,3 +88,56 @@ export const vigenereDecipher = ({text, key}) => {
 
   return result;
 };
+
+const autoVigenereCipher = ({text, key}) => {
+  const lowercasedText = text.toLowerCase();
+  const lowercasedKey = key.concat(text).toLowerCase();
+  let result = '';
+
+  for (let i = 0; i < text.length; i++) {
+    result = result.concat(numToAlphabet[
+      (alphabetToNum[lowercasedText[i]] + alphabetToNum[lowercasedKey[i]]) % 26
+    ]);
+  }
+
+  return result;
+};
+
+const autoVigenereDecipher = ({text, key}) => {
+  const lowercasedText = text.toLowerCase();
+  let lowercasedKey = key.toLowerCase();
+  let result = '';
+
+  for (let i = 0; i < text.length; i++) {
+    const currentLetter = numToAlphabet[
+      // '+ 26' to prevent negative value
+      ((alphabetToNum[lowercasedText[i]] - alphabetToNum[lowercasedKey[i]]) + 26) % 26
+    ];
+    lowercasedKey = lowercasedKey.concat(currentLetter);
+    result = result.concat(currentLetter);
+  }
+
+  return result;
+};
+
+export const useCipher = (cipherMode) => {
+  if (cipherMode === 'vigenere') {
+    return vigenereCipher;
+  } else if (cipherMode === 'autoVigenere') {
+    return autoVigenereCipher;
+  } else {
+    console.log("Cipher Mode is not recognised");
+    return () => {};
+  }
+};
+
+export const useDecipher = (cipherMode) => {
+  if (cipherMode === 'vigenere') {
+    return vigenereDecipher;
+  } else if (cipherMode === 'autoVigenere') {
+    return autoVigenereDecipher;
+  } else {
+    console.log("Decipher Mode is not recognised");
+    return () => {};
+  }
+}
