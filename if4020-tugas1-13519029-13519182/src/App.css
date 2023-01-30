@@ -1,0 +1,55 @@
+.App {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px;
+}
+
+#title {
+  font-size: larger;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+#inputContainer {
+  display: block;
+  width: 300px;
+  height: 60px;
+  border-radius: 7px;
+  padding: 15px 25px;
+}
+
+#resultTextContainer {
+  background-color: lightblue;
+  border-radius: 7px;
+  padding: 15px 25px;
+  width: 300px;
+  height: 60px;
+  overflow-y: scroll;
+  overflow-wrap: break-word;
+}
+
+#checkboxButton {
+  /* Disable default button style */
+  background: none;
+	color: inherit;
+	border: none;
+	padding: 0;
+	font: inherit;
+	cursor: pointer;
+	outline: inherit;
+}
+
+#checkboxContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  text-align: center;
+  gap: 5px;
+}
+
+#checkboxIcon {
+  width: 20px;
+  height: 20px;
+}
