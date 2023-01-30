@@ -1,3 +1,8 @@
+import {
+  coprime,
+  modInverse,
+} from '../utils';
+
 const alphabetToNum = {
   'a': 0,
   'b': 1,
@@ -120,11 +125,73 @@ const autoVigenereDecipher = ({text, key}) => {
   return result;
 };
 
+const affineCipher = ({text, m, b}) => {
+  let result = '';
+
+  try {
+    if (
+      typeof m !== 'number'
+      || Number.isNaN(m)
+      || m <= 0
+      || !coprime(m, 256)
+    ) {
+      throw 'm value must be positive number and coprime with 256';
+    }
+    
+    if (typeof b !== 'number' || Number.isNaN(b)) {
+      throw 'b value must be number';
+    }
+
+    for (let i = 0; i < text.length; i++) {
+      const P = text.charCodeAt(i);
+      const C = (m * P + b) % 256; 
+      result = result.concat(String.fromCharCode(C));
+    };
+
+    return result;
+  } catch (err) {
+    console.log("Error: ", err);
+  };
+};
+
+const affineDecipher = ({text, m, b}) => {
+  let result = '';
+
+  try {
+    if (
+      typeof m !== 'number'
+      || Number.isNaN(m)
+      || m <= 0
+      || !coprime(m, 256)
+    ) {
+      throw 'm value must be positive number and coprime with 256';
+    }
+    
+    if (typeof b !== 'number' || Number.isNaN(b)) {
+      throw 'b value must be number';
+    }
+
+    const mInverse = modInverse(m, 256);
+
+    for (let i = 0; i < text.length; i++) {
+      const C = text.charCodeAt(i);
+      const P = (mInverse * (C - b)) % 256; 
+      result = result.concat(String.fromCharCode(P));
+    };
+
+    return result;
+  } catch (err) {
+    console.log("Error: ", err);
+  };
+};
+
 export const useCipher = (cipherMode) => {
   if (cipherMode === 'vigenere') {
     return vigenereCipher;
   } else if (cipherMode === 'autoVigenere') {
     return autoVigenereCipher;
+  } else if (cipherMode === 'affine') {
+    return affineCipher;
   } else {
     console.log("Cipher Mode is not recognised");
     return () => {};
@@ -136,8 +203,10 @@ export const useDecipher = (cipherMode) => {
     return vigenereDecipher;
   } else if (cipherMode === 'autoVigenere') {
     return autoVigenereDecipher;
+  } else if (cipherMode === 'affine') {
+    return affineDecipher;
   } else {
     console.log("Decipher Mode is not recognised");
     return () => {};
   }
-}
+};

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 import emptyCheckbox from './images/checkbox-inactive-yellow.png';
 import filledCheckbox from './images/checkbox-active-yellow.png';
@@ -23,13 +23,55 @@ const App = () => {
 
   const [inputPlainText, setInputPlainText] = useState('');
   const [inputCipherKey, setInputCipherKey] = useState('');
+  const [affineCipherM, setAffineCipherM] = useState(0);
+  const [affineCipherB, setAffineCipherB] = useState(0);
   const [isShowPerFiveLetters, setIsShowPerFiveLetters] = useState(false);
 
   const [inputCipherText, setInputCipherText] = useState('');
   const [inputDecipherKey, setInputDecipherKey] = useState('');
+  const [affineDecipherM, setAffineDecipherM] = useState(0);
+  const [affineDecipherB, setAffineDecipherB] = useState(0);
 
   const cipher = useCipher(cipherMode);
   const decipher = useDecipher(cipherMode);
+  
+  const cipherResult = () => {
+    let result = '';
+
+    if (cipherMode === 'vigenere' || cipherMode === 'autoVigenere') {
+      result = cipher({
+        text: removeNonalphabet(inputPlainText),
+        key: inputCipherKey || 'a',
+      });
+    } else if (cipherMode === 'affine') {
+      result = cipher({
+        text: inputPlainText,
+        m: parseInt(affineCipherM),
+        b: parseInt(affineCipherB),
+      });
+    }
+
+    if (isShowPerFiveLetters) {
+      return separatePerFiveLetters(result);
+    } else {
+      return result;
+    }
+  }
+
+  const decipherResult = () => {
+    if (cipherMode === 'vigenere' || cipherMode === 'autoVigenere') {
+      return decipher({
+        text: removeNonalphabet(inputCipherText),
+        key: inputDecipherKey || 'a',
+      });
+    }else if (cipherMode === 'affine') {
+      return decipher({
+        text: inputCipherText,
+        m: parseInt(affineDecipherM),
+        b: parseInt(affineDecipherB),
+      });
+    }
+  };
 
   const readPlainFile = (e) => {
     if(e.target.value === '') {
@@ -71,6 +113,7 @@ const App = () => {
       >
         <option value="vigenere">Vigenere</option>
         <option value="autoVigenere">Auto Vigenere</option>
+        <option value="affine">Affine</option>
       </select>
 
       <div id='title'>
@@ -98,34 +141,49 @@ const App = () => {
       />
 
       {/* Key Text */}
-      <div>
-        Key:
-      </div>
-      <textarea
-        id='inputContainer'
-        value={inputCipherKey}
-        onChange={(e) => {
-          setInputCipherKey(e.target.value);
-        }}
-      />
+      {(cipherMode === 'vigenere' || cipherMode === 'autoVigenere') && (
+        <React.Fragment>
+          <div>
+            Key:
+          </div>
+          <textarea
+            id='inputContainer'
+            value={inputCipherKey}
+            onChange={(e) => {
+              setInputCipherKey(e.target.value);
+            }}
+          />
+        </React.Fragment>
+      )}
+
+      {(cipherMode === 'affine') && (
+        <React.Fragment>
+          <div>
+            m:
+          </div>
+          <input
+            value={affineCipherM}
+            type='number'
+            onChange={(e) => setAffineCipherM(e.target.value)}
+          />
+          <div>
+            b:
+          </div>
+          <input
+            value={affineCipherB}
+            type='number'
+            onChange={(e) => setAffineCipherB(e.target.value)}
+          />
+        </React.Fragment>
+      )}
+      
 
       {/* Cipher Text */}
       <div>
         Ciphered Text:  
       </div>
       <div id='resultTextContainer'>
-        {isShowPerFiveLetters && (
-          separatePerFiveLetters(cipher({
-            text: removeNonalphabet(inputPlainText),
-            key: inputCipherKey || 'a',
-          }))
-        )}
-        {!isShowPerFiveLetters && (
-          cipher({
-            text: removeNonalphabet(inputPlainText),
-            key: inputCipherKey || 'a',
-          })
-        )}
+        {cipherResult()}
       </div>
 
       <button
@@ -172,26 +230,48 @@ const App = () => {
       />
 
       {/* Key Text */}
-      <div>
-        Key:
-      </div>
-      <textarea
-        id='inputContainer'
-        value={inputDecipherKey}
-        onChange={(e) => {
-          setInputDecipherKey(e.target.value);
-        }}
-      />
+      {(cipherMode === 'vigenere' || cipherMode === 'autoVigenere') && (
+        <React.Fragment>
+          <div>
+            Key:
+          </div>
+          <textarea
+            id='inputContainer'
+            value={inputDecipherKey}
+            onChange={(e) => {
+              setInputDecipherKey(e.target.value);
+            }}
+          />
+        </React.Fragment>
+      )}
+
+      {(cipherMode === 'affine') && (
+        <React.Fragment>
+          <div>
+            m:
+          </div>
+          <input
+            value={affineDecipherM}
+            type='number'
+            onChange={(e) => setAffineDecipherM(e.target.value)}
+          />
+          <div>
+            b:
+          </div>
+          <input
+            value={affineDecipherB}
+            type='number'
+            onChange={(e) => setAffineDecipherB(e.target.value)}
+          />
+        </React.Fragment>
+      )}
 
       {/* Cipher Text */}
       <div>
         Deciphered Text:  
       </div>
       <div id='resultTextContainer'>
-        {decipher({
-          text: removeNonalphabet(inputCipherText),
-          key: inputDecipherKey || 'a',
-        })}
+        {decipherResult()}
       </div>
     </div>
   );
