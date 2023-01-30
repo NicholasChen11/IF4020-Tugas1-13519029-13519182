@@ -38,7 +38,11 @@ const App = () => {
   const cipherResult = () => {
     let result = '';
 
-    if (cipherMode === 'vigenere' || cipherMode === 'autoVigenere') {
+    if (
+      cipherMode === 'vigenere'
+      || cipherMode === 'autoVigenere'
+      || cipherMode === 'playfair'
+    ) {
       result = cipher({
         text: removeNonalphabet(inputPlainText),
         key: inputCipherKey || 'a',
@@ -56,15 +60,19 @@ const App = () => {
     } else {
       return result;
     }
-  }
+  };
 
   const decipherResult = () => {
-    if (cipherMode === 'vigenere' || cipherMode === 'autoVigenere') {
+    if (
+      cipherMode === 'vigenere'
+      || cipherMode === 'autoVigenere'
+      || cipherMode === 'playfair'
+    ) {
       return decipher({
         text: removeNonalphabet(inputCipherText),
         key: inputDecipherKey || 'a',
       });
-    }else if (cipherMode === 'affine') {
+    } else if (cipherMode === 'affine') {
       return decipher({
         text: inputCipherText,
         m: parseInt(affineDecipherM),
@@ -74,7 +82,7 @@ const App = () => {
   };
 
   const readPlainFile = (e) => {
-    if(e.target.value === '') {
+    if (e.target.value === '') {
       console.log('No file selected');
       return;
     }
@@ -90,7 +98,7 @@ const App = () => {
   };
 
   const readCipherFile = (e) => {
-    if(e.target.value === '') {
+    if (e.target.value === '') {
       console.log('No file selected');
       return;
     }
@@ -114,6 +122,7 @@ const App = () => {
         <option value="vigenere">Vigenere</option>
         <option value="autoVigenere">Auto Vigenere</option>
         <option value="affine">Affine</option>
+        <option value="playfair">Playfair</option>
       </select>
 
       <div id='title'>
@@ -141,7 +150,11 @@ const App = () => {
       />
 
       {/* Key Text */}
-      {(cipherMode === 'vigenere' || cipherMode === 'autoVigenere') && (
+      {(
+        cipherMode === 'vigenere' 
+        || cipherMode === 'autoVigenere'
+        || cipherMode === 'playfair'
+      ) && (
         <React.Fragment>
           <div>
             Key:
@@ -230,7 +243,11 @@ const App = () => {
       />
 
       {/* Key Text */}
-      {(cipherMode === 'vigenere' || cipherMode === 'autoVigenere') && (
+      {(
+        cipherMode === 'vigenere' 
+        || cipherMode === 'autoVigenere'
+        || cipherMode === 'playfair'
+      ) && (
         <React.Fragment>
           <div>
             Key:
