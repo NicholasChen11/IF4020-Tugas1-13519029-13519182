@@ -1,5 +1,11 @@
 import {
+  det,
+} from 'mathjs';
+
+import {
+  adjoint,
   coprime,
+  matrixMultiply,
   modInverse,
 } from '../utils';
 
@@ -329,11 +335,9 @@ const playfairCipher = ({text, key}) => {
   const rawText = text.toLowerCase();
   const lowercasedKey = key.toLowerCase();
   const keyTable = generateKeyTable(lowercasedKey);
-  console.log('Nicho table:', keyTable);
   let result = '';
 
   const preprocessedText = playfairPreprocess(rawText);
-  console.log("Nicho preprocessed", preprocessedText);
 
   for (let idx = 0; idx < preprocessedText.length; idx = idx + 2) {
     const firstChar = preprocessedText[idx];
@@ -431,6 +435,103 @@ const playfairDecipher = ({text, key}) => {
   return result;
 };
 
+// Hill Part
+// =========
+const hillCipher = ({text, key}) => {
+  const keySize = key.length;
+  let result = '';
+
+  for (let idx = 0; idx < text.length; idx = idx + keySize) {
+    const currentSubstring = text.slice(idx, idx + keySize);
+    let vector = []; 
+
+    // convert to charCode
+    for (let i = 0; i < currentSubstring.length; i++) {
+      vector.push((currentSubstring[i]).charCodeAt());
+    };
+
+    // fill remaining if still empty (for case: last batch)
+    while (vector.length < keySize) {
+      vector.push(255);
+    }
+
+    const resultVector = matrixMultiply(key, vector);
+
+    // mod 256 every element and convert code back to char
+    for (let i = 0; i < resultVector.length; i++) {
+      resultVector[i] = resultVector[i] % 256;
+      result = result.concat(String.fromCharCode(resultVector[i]));
+    };
+  }
+
+  return result;
+};
+
+const hillDecipher = ({text, key}) => {
+  const keySize = key.length;
+  try {
+    const D = det(key);
+    if (D === 0) {
+      throw 'determinant must not be zero';
+    }
+    if (!coprime(D, 256)) {
+      throw 'determinant must be coprime with 256';
+    }
+
+    // find mod inverse of D
+    const invD = modInverse(D, 256);
+    
+    // find adjoint matrix
+    let adj = new Array(key.length);
+    for (let i=0;i<key.length;i++) {
+      adj[i] = new Array(key.length);
+    }
+
+    adjoint(key, adj);
+
+    // make sure all numbers in adjoint are positive
+    // multiply invD with positive adjoint, then mod with 256
+    for (let i = 0; i < adj.length; i++) {
+      for (let j = 0; j < adj[0].length; j++) {
+        while (adj[i][j] < 0) {
+          adj[i][j] = adj[i][j] + 256;
+        }
+        adj[i][j] = (adj[i][j] * invD) % 256;
+      }
+    }
+
+    const inverseKey = adj;
+    let result = '';
+
+    for (let idx = 0; idx < text.length; idx = idx + keySize) {
+      const currentSubstring = text.slice(idx, idx + keySize);
+      let vector = [];
+
+      // convert to charCode
+      for (let i = 0; i < currentSubstring.length; i++) {
+        vector.push((currentSubstring[i]).charCodeAt());
+      };
+
+      const resultVector = matrixMultiply(inverseKey, vector);
+
+      // mod 256 every element and convert code back to char
+      for (let i = 0; i < resultVector.length; i++) {
+        resultVector[i] = (resultVector[i]+256) % 256;
+        result = result.concat(String.fromCharCode(resultVector[i]));
+      };
+    }
+
+    // remove trailing '255' at the end
+    while (result.slice(-1) === String.fromCharCode(255)){
+      result = result.slice(0, -1);
+    }
+
+    return result;
+  } catch (e) {
+    console.log('Error: ', e);
+  }
+};
+
 export const useCipher = (cipherMode) => {
   if (cipherMode === 'vigenere') {
     return vigenereCipher;
@@ -440,6 +541,8 @@ export const useCipher = (cipherMode) => {
     return affineCipher;
   } else if (cipherMode === 'playfair') {
     return playfairCipher;
+  } else if (cipherMode === 'hill') {
+    return hillCipher;
   } else {
     console.log("Cipher Mode is not recognised");
     return () => {};
@@ -455,6 +558,8 @@ export const useDecipher = (cipherMode) => {
     return affineDecipher;
   } else if (cipherMode === 'playfair') {
     return playfairDecipher;
+  } else if (cipherMode === 'hill') {
+    return hillDecipher;
   } else {
     console.log("Decipher Mode is not recognised");
     return () => {};

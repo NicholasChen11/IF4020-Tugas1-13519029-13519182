@@ -15,6 +15,17 @@ import {
 
 import './App.css';
 
+const dummyHillKey2 = [
+  [0,0],
+  [0,0],
+];
+
+const dummyHillKey3 = [
+  [0,0,0],
+  [0,0,0],
+  [0,0,0],
+];
+
 const App = () => {
   const fileInputPlainRef = useRef(null);
   const fileInputCipherRef = useRef(null);
@@ -25,12 +36,16 @@ const App = () => {
   const [inputCipherKey, setInputCipherKey] = useState('');
   const [affineCipherM, setAffineCipherM] = useState(0);
   const [affineCipherB, setAffineCipherB] = useState(0);
+  const [hillKeySize, setHillKeySize] = useState(2);
+  const [hillKey, setHillKey] = useState(dummyHillKey2);
   const [isShowPerFiveLetters, setIsShowPerFiveLetters] = useState(false);
 
   const [inputCipherText, setInputCipherText] = useState('');
   const [inputDecipherKey, setInputDecipherKey] = useState('');
   const [affineDecipherM, setAffineDecipherM] = useState(0);
   const [affineDecipherB, setAffineDecipherB] = useState(0);
+  const [decipherHillKeySize, setDecipherHillKeySize] = useState(2);
+  const [decipherHillKey, setDecipherHillKey] = useState(dummyHillKey2);
 
   const cipher = useCipher(cipherMode);
   const decipher = useDecipher(cipherMode);
@@ -52,6 +67,11 @@ const App = () => {
         text: inputPlainText,
         m: parseInt(affineCipherM),
         b: parseInt(affineCipherB),
+      });
+    } else if (cipherMode === 'hill') {
+      result = cipher({
+        text: inputPlainText,
+        key: hillKey,
       });
     }
 
@@ -77,6 +97,11 @@ const App = () => {
         text: inputCipherText,
         m: parseInt(affineDecipherM),
         b: parseInt(affineDecipherB),
+      });
+    } else if (cipherMode === 'hill') {
+      return decipher({
+        text: inputCipherText,
+        key: decipherHillKey,
       });
     }
   };
@@ -123,6 +148,7 @@ const App = () => {
         <option value="autoVigenere">Auto Vigenere</option>
         <option value="affine">Affine</option>
         <option value="playfair">Playfair</option>
+        <option value="hill">Hill</option>
       </select>
 
       <div id='title'>
@@ -187,6 +213,74 @@ const App = () => {
             type='number'
             onChange={(e) => setAffineCipherB(e.target.value)}
           />
+        </React.Fragment>
+      )}
+
+      {(cipherMode === 'hill') && (
+        <React.Fragment>
+          <div>
+            key:
+          </div>
+          <div id={hillKeySize === 2 ? "grid-container-2" : "grid-container-3"}>
+            {[...Array(hillKeySize*hillKeySize)].map((_, idx) => {
+              const x = Math.floor(idx / hillKeySize);
+              const y = idx % hillKeySize;
+              const changeKey = (newValue) => {
+                let key = JSON.parse(JSON.stringify(hillKey));
+                key[x][y] = newValue;
+                return key;
+              }
+
+              return (
+                <input
+                  key={`grid-idx-${idx + 1}`}
+                  value={hillKey[x][y]}
+                  type='number'
+                  onChange={(e) => setHillKey(changeKey(parseInt(e.target.value)))}
+                />
+              );
+            })}
+          </div>
+          
+
+          <button
+            id='checkboxButton'
+            onClick={() => {
+              hillKeySize === 3 && setHillKey(dummyHillKey2);
+              setHillKeySize(2);
+            }}
+          >
+            <div id='checkboxContainer'>
+              <img
+                id='checkboxIcon'
+                src={hillKeySize === 2 ? filledCheckbox : emptyCheckbox}
+                alt='checkbox icon'
+              />
+
+              <div>
+                Use key of size 2x2
+              </div>
+            </div>
+          </button>
+          <button
+            id='checkboxButton'
+            onClick={() => {
+              hillKeySize === 2 && setHillKey(dummyHillKey3);
+              setHillKeySize(3);
+            }}
+          >
+            <div id='checkboxContainer'>
+              <img
+                id='checkboxIcon'
+                src={hillKeySize === 3 ? filledCheckbox : emptyCheckbox}
+                alt='checkbox icon'
+              />
+
+              <div>
+                Use key of size 3x3
+              </div>
+            </div>
+          </button>
         </React.Fragment>
       )}
       
@@ -280,6 +374,73 @@ const App = () => {
             type='number'
             onChange={(e) => setAffineDecipherB(e.target.value)}
           />
+        </React.Fragment>
+      )}
+
+      {(cipherMode === 'hill') && (
+        <React.Fragment>
+          <div>
+            key:
+          </div>
+          <div id={decipherHillKeySize === 2 ? "grid-container-2" : "grid-container-3"}>
+            {[...Array(decipherHillKeySize*decipherHillKeySize)].map((_, idx) => {
+              const x = Math.floor(idx / decipherHillKeySize);
+              const y = idx % decipherHillKeySize;
+              const changeKey = (newValue) => {
+                let key = JSON.parse(JSON.stringify(decipherHillKey));
+                key[x][y] = newValue;
+                return key;
+              }
+
+              return (
+                <input
+                  key={`grid-idx-${idx + 1}`}
+                  value={decipherHillKey[x][y]}
+                  type='number'
+                  onChange={(e) => setDecipherHillKey(changeKey(parseInt(e.target.value)))}
+                />
+              );
+            })}
+          </div>
+
+          <button
+            id='checkboxButton'
+            onClick={() => {
+              decipherHillKeySize === 3 && setDecipherHillKey(dummyHillKey2);
+              setDecipherHillKeySize(2);
+            }}
+          >
+            <div id='checkboxContainer'>
+              <img
+                id='checkboxIcon'
+                src={decipherHillKeySize === 2 ? filledCheckbox : emptyCheckbox}
+                alt='checkbox icon'
+              />
+
+              <div>
+                Use key of size 2x2
+              </div>
+            </div>
+          </button>
+          <button
+            id='checkboxButton'
+            onClick={() => {
+              decipherHillKeySize === 2 && setDecipherHillKey(dummyHillKey3);
+              setDecipherHillKeySize(3);
+            }}
+          >
+            <div id='checkboxContainer'>
+              <img
+                id='checkboxIcon'
+                src={decipherHillKeySize === 3 ? filledCheckbox : emptyCheckbox}
+                alt='checkbox icon'
+              />
+
+              <div>
+                Use key of size 3x3
+              </div>
+            </div>
+          </button>
         </React.Fragment>
       )}
 
