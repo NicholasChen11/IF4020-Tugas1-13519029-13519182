@@ -28,6 +28,7 @@ const dummyHillKey3 = [
 
 const App = () => {
   const fileInputPlainRef = useRef(null);
+  const cipherResultRef = useRef(null);
   const fileInputCipherRef = useRef(null);
   
   const [cipherMode, setCipherMode] = useState('vigenere');
@@ -146,6 +147,17 @@ const App = () => {
     });
 
     reader.readAsBinaryString(e.target.files[0]);
+  };
+
+  const loadTxt = () => {
+    const messsage = cipherResultRef.current.innerHTML;
+
+    const element = document.createElement("a");
+    const file = new Blob([messsage], {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = "cipherFile.txt";
+    document.body.appendChild(element); // Required for this to work in FireFox
+    element.click();
   };
 
   return (
@@ -301,7 +313,7 @@ const App = () => {
       <div>
         Ciphered Text:  
       </div>
-      <div id='resultTextContainer'>
+      <div id='resultTextContainer' ref={cipherResultRef}>
         {cipherResult()}
       </div>
 
@@ -320,6 +332,12 @@ const App = () => {
             Show cipher per 5 letters
           </div>
         </div>
+      </button>
+
+      <button
+        onClick={() => loadTxt()}
+      >
+        Load Result to txt
       </button>
 
       {/* ========================================================== */}
