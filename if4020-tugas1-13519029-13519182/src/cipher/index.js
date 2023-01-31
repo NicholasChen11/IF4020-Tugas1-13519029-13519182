@@ -102,6 +102,35 @@ const vigenereDecipher = ({text, key}) => {
   return result;
 };
 
+// Extended Vigenere Part
+// ======================
+const extendedVigenereCipher = ({text, key}) => {
+  let result = '';
+
+  for (let i = 0; i < text.length; i++) {
+    const keyIdx = i % key.length;
+    result = result.concat(String.fromCharCode(
+      (text[i].charCodeAt() + key[keyIdx].charCodeAt()) % 256
+    ));
+  }
+
+  return result;
+}
+
+const extendedVigenereDecipher = ({text, key}) => {
+  let result = '';
+
+  for (let i = 0; i < text.length; i++) {
+    const keyIdx = i % key.length;
+    result = result.concat(String.fromCharCode(
+      // '+ 256' to prevent negative value
+      ((text[i].charCodeAt() - key[keyIdx].charCodeAt()) + 256) % 256
+    ));
+  }
+
+  return result;
+};
+
 // Auto Vigenere Part
 // ==================
 const autoVigenereCipher = ({text, key}) => {
@@ -537,6 +566,8 @@ export const useCipher = (cipherMode) => {
     return vigenereCipher;
   } else if (cipherMode === 'autoVigenere') {
     return autoVigenereCipher;
+  } else if (cipherMode === 'extendedVigenere') {
+    return extendedVigenereCipher;
   } else if (cipherMode === 'affine') {
     return affineCipher;
   } else if (cipherMode === 'playfair') {
@@ -554,6 +585,8 @@ export const useDecipher = (cipherMode) => {
     return vigenereDecipher;
   } else if (cipherMode === 'autoVigenere') {
     return autoVigenereDecipher;
+  } else if (cipherMode === 'extendedVigenere') {
+    return extendedVigenereDecipher;
   } else if (cipherMode === 'affine') {
     return affineDecipher;
   } else if (cipherMode === 'playfair') {

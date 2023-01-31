@@ -62,6 +62,11 @@ const App = () => {
         text: removeNonalphabet(inputPlainText),
         key: inputCipherKey || 'a',
       });
+    } else if (cipherMode === 'extendedVigenere') {
+      result = cipher({
+        text: inputPlainText,
+        key: inputCipherKey || 'a',
+      });
     } else if (cipherMode === 'affine') {
       result = cipher({
         text: inputPlainText,
@@ -90,6 +95,11 @@ const App = () => {
     ) {
       return decipher({
         text: removeNonalphabet(inputCipherText),
+        key: inputDecipherKey || 'a',
+      });
+    } else if (cipherMode === 'extendedVigenere') {
+      return decipher({
+        text: inputCipherText,
         key: inputDecipherKey || 'a',
       });
     } else if (cipherMode === 'affine') {
@@ -145,6 +155,7 @@ const App = () => {
         onChange={(e) => setCipherMode(e.target.value)}
       >
         <option value="vigenere">Vigenere</option>
+        <option value="extendedVigenere">Extended Vigenere</option>
         <option value="autoVigenere">Auto Vigenere</option>
         <option value="affine">Affine</option>
         <option value="playfair">Playfair</option>
@@ -178,6 +189,7 @@ const App = () => {
       {/* Key Text */}
       {(
         cipherMode === 'vigenere' 
+        || cipherMode === 'extendedVigenere'
         || cipherMode === 'autoVigenere'
         || cipherMode === 'playfair'
       ) && (
@@ -339,6 +351,7 @@ const App = () => {
       {/* Key Text */}
       {(
         cipherMode === 'vigenere' 
+        || cipherMode === 'extendedVigenere'
         || cipherMode === 'autoVigenere'
         || cipherMode === 'playfair'
       ) && (
