@@ -40,6 +40,7 @@ const App = () => {
   const [hillKeySize, setHillKeySize] = useState(2);
   const [hillKey, setHillKey] = useState(dummyHillKey2);
   const [isShowPerFiveLetters, setIsShowPerFiveLetters] = useState(false);
+  const [isHillCipherErrorVisible, setIsHillCipherErrorVisible] = useState(false);
 
   const [inputCipherText, setInputCipherText] = useState('');
   const [inputDecipherKey, setInputDecipherKey] = useState('');
@@ -47,6 +48,7 @@ const App = () => {
   const [affineDecipherB, setAffineDecipherB] = useState(0);
   const [decipherHillKeySize, setDecipherHillKeySize] = useState(2);
   const [decipherHillKey, setDecipherHillKey] = useState(dummyHillKey2);
+  const [isHillDecipherErrorVisible, setIsHillDecipherErrorVisible] = useState(false);
 
   const cipher = useCipher(cipherMode);
   const decipher = useDecipher(cipherMode);
@@ -79,6 +81,8 @@ const App = () => {
         text: inputPlainText,
         key: hillKey,
       });
+
+      if (!result && !isHillCipherErrorVisible) setIsHillCipherErrorVisible(true);
     }
 
     if (isShowPerFiveLetters) {
@@ -110,10 +114,17 @@ const App = () => {
         b: parseInt(affineDecipherB),
       });
     } else if (cipherMode === 'hill') {
-      return decipher({
+      const result = decipher({
         text: inputCipherText,
         key: decipherHillKey,
       });
+      
+      if (result) {
+        return result;
+      }
+      if (!isHillDecipherErrorVisible) {
+        setIsHillDecipherErrorVisible(true);
+      }
     }
   };
 
@@ -162,325 +173,356 @@ const App = () => {
 
   return (
     <div className="App">
-      <select
-        id="dropdown"
-        onChange={(e) => setCipherMode(e.target.value)}
-      >
-        <option value="vigenere">Vigenere</option>
-        <option value="extendedVigenere">Extended Vigenere</option>
-        <option value="autoVigenere">Auto Vigenere</option>
-        <option value="affine">Affine</option>
-        <option value="playfair">Playfair</option>
-        <option value="hill">Hill</option>
-      </select>
-
-      <div id='title'>
-        Cipher Part
+      <div id='choose-cipher-box'>
+        <div id='choose-cipher-text'>
+          Choose cipher:
+        </div>
+        <select
+          id="dropdown"
+          onChange={(e) => setCipherMode(e.target.value)}
+        >
+          <option value="vigenere">Vigenere</option>
+          <option value="extendedVigenere">Extended Vigenere</option>
+          <option value="autoVigenere">Auto Vigenere</option>
+          <option value="affine">Affine</option>
+          <option value="playfair">Playfair</option>
+          <option value="hill">Hill</option>
+        </select>
       </div>
 
-      {/* Plain Text */}
-      <div>
-        Plain Text:
-      </div>
-      <textarea
-        id='inputContainer'
-        value={inputPlainText}
-        onChange={(e) => {
-          setInputPlainText(e.target.value);
-          if (fileInputPlainRef.current) {
-            fileInputPlainRef.current.value = '';
-          }
-        }}
-      />
-      <input
-        ref={fileInputPlainRef}
-        type='file'
-        onChange={readPlainFile}
-      />
+      <div id='body'>
+        <div id='column-section'>
+          <div id='title'>
+            Cipher Part
+          </div>
 
-      {/* Key Text */}
-      {(
-        cipherMode === 'vigenere' 
-        || cipherMode === 'extendedVigenere'
-        || cipherMode === 'autoVigenere'
-        || cipherMode === 'playfair'
-      ) && (
-        <React.Fragment>
+          {/* Plain Text */}
           <div>
-            Key:
+            Plain Text:
           </div>
           <textarea
             id='inputContainer'
-            value={inputCipherKey}
+            value={inputPlainText}
             onChange={(e) => {
-              setInputCipherKey(e.target.value);
+              setIsHillCipherErrorVisible(false);
+              setInputPlainText(e.target.value);
+              if (fileInputPlainRef.current) {
+                fileInputPlainRef.current.value = '';
+              }
             }}
           />
-        </React.Fragment>
-      )}
-
-      {(cipherMode === 'affine') && (
-        <React.Fragment>
-          <div>
-            m:
-          </div>
           <input
-            value={affineCipherM}
-            type='number'
-            onChange={(e) => setAffineCipherM(e.target.value)}
+            ref={fileInputPlainRef}
+            type='file'
+            onChange={readPlainFile}
           />
-          <div>
-            b:
-          </div>
-          <input
-            value={affineCipherB}
-            type='number'
-            onChange={(e) => setAffineCipherB(e.target.value)}
-          />
-        </React.Fragment>
-      )}
 
-      {(cipherMode === 'hill') && (
-        <React.Fragment>
-          <div>
-            key:
-          </div>
-          <div id={hillKeySize === 2 ? "grid-container-2" : "grid-container-3"}>
-            {[...Array(hillKeySize*hillKeySize)].map((_, idx) => {
-              const x = Math.floor(idx / hillKeySize);
-              const y = idx % hillKeySize;
-              const changeKey = (newValue) => {
-                let key = JSON.parse(JSON.stringify(hillKey));
-                key[x][y] = newValue;
-                return key;
-              }
+          {isHillCipherErrorVisible && (
+            <div id='error-hill'>
+              determinant kunci harus tidak nol dan koprima dengan 256
+            </div>
+          )}
 
-              return (
-                <input
-                  key={`grid-idx-${idx + 1}`}
-                  value={hillKey[x][y]}
-                  type='number'
-                  onChange={(e) => setHillKey(changeKey(parseInt(e.target.value)))}
-                />
-              );
-            })}
-          </div>
+          {/* Key Text */}
+          {(
+            cipherMode === 'vigenere' 
+            || cipherMode === 'extendedVigenere'
+            || cipherMode === 'autoVigenere'
+            || cipherMode === 'playfair'
+          ) && (
+            <React.Fragment>
+              <div>
+                Key:
+              </div>
+              <textarea
+                id='inputContainer'
+                value={inputCipherKey}
+                onChange={(e) => {
+                  setInputCipherKey(e.target.value);
+                }}
+              />
+            </React.Fragment>
+          )}
+
+          {(cipherMode === 'affine') && (
+            <React.Fragment>
+              <div>
+                m:
+              </div>
+              <input
+                value={affineCipherM}
+                type='number'
+                onChange={(e) => setAffineCipherM(e.target.value)}
+              />
+              <div>
+                b:
+              </div>
+              <input
+                value={affineCipherB}
+                type='number'
+                onChange={(e) => setAffineCipherB(e.target.value)}
+              />
+            </React.Fragment>
+          )}
+
+          {(cipherMode === 'hill') && (
+            <React.Fragment>
+              <div>
+                key:
+              </div>
+              <div id={hillKeySize === 2 ? "grid-container-2" : "grid-container-3"}>
+                {[...Array(hillKeySize*hillKeySize)].map((_, idx) => {
+                  const x = Math.floor(idx / hillKeySize);
+                  const y = idx % hillKeySize;
+                  const changeKey = (newValue) => {
+                    let key = JSON.parse(JSON.stringify(hillKey));
+                    key[x][y] = newValue;
+                    return key;
+                  }
+
+                  return (
+                    <input
+                      key={`grid-idx-${idx + 1}`}
+                      value={hillKey[x][y]}
+                      type='number'
+                      onChange={(e) => {
+                        setIsHillCipherErrorVisible(false);
+                        setHillKey(changeKey(parseInt(e.target.value)))
+                      }}
+                    />
+                  );
+                })}
+              </div>
+              
+
+              <button
+                id='checkboxButton'
+                onClick={() => {
+                  hillKeySize === 3 && setHillKey(dummyHillKey2);
+                  setHillKeySize(2);
+                }}
+              >
+                <div id='checkboxContainer'>
+                  <img
+                    id='checkboxIcon'
+                    src={hillKeySize === 2 ? filledCheckbox : emptyCheckbox}
+                    alt='checkbox icon'
+                  />
+
+                  <div>
+                    Use key of size 2x2
+                  </div>
+                </div>
+              </button>
+              <button
+                id='checkboxButton'
+                onClick={() => {
+                  hillKeySize === 2 && setHillKey(dummyHillKey3);
+                  setHillKeySize(3);
+                }}
+              >
+                <div id='checkboxContainer'>
+                  <img
+                    id='checkboxIcon'
+                    src={hillKeySize === 3 ? filledCheckbox : emptyCheckbox}
+                    alt='checkbox icon'
+                  />
+
+                  <div>
+                    Use key of size 3x3
+                  </div>
+                </div>
+              </button>
+            </React.Fragment>
+          )}
           
 
-          <button
-            id='checkboxButton'
-            onClick={() => {
-              hillKeySize === 3 && setHillKey(dummyHillKey2);
-              setHillKeySize(2);
-            }}
-          >
-            <div id='checkboxContainer'>
-              <img
-                id='checkboxIcon'
-                src={hillKeySize === 2 ? filledCheckbox : emptyCheckbox}
-                alt='checkbox icon'
-              />
-
-              <div>
-                Use key of size 2x2
-              </div>
-            </div>
-          </button>
-          <button
-            id='checkboxButton'
-            onClick={() => {
-              hillKeySize === 2 && setHillKey(dummyHillKey3);
-              setHillKeySize(3);
-            }}
-          >
-            <div id='checkboxContainer'>
-              <img
-                id='checkboxIcon'
-                src={hillKeySize === 3 ? filledCheckbox : emptyCheckbox}
-                alt='checkbox icon'
-              />
-
-              <div>
-                Use key of size 3x3
-              </div>
-            </div>
-          </button>
-        </React.Fragment>
-      )}
-      
-
-      {/* Cipher Text */}
-      <div>
-        Ciphered Text:  
-      </div>
-      <div id='resultTextContainer' ref={cipherResultRef}>
-        {cipherResult()}
-      </div>
-
-      <button
-        id='checkboxButton'
-        onClick={() => setIsShowPerFiveLetters(!isShowPerFiveLetters)}
-      >
-        <div id='checkboxContainer'>
-          <img
-            id='checkboxIcon'
-            src={isShowPerFiveLetters ? filledCheckbox : emptyCheckbox}
-            alt='checkbox icon'
-          />
-
+          {/* Cipher Text */}
           <div>
-            Show cipher per 5 letters
+            Ciphered Text:  
           </div>
+          <div id='resultTextContainer' ref={cipherResultRef}>
+            {cipherResult()}
+          </div>
+
+          <button
+            id='checkboxButton'
+            onClick={() => setIsShowPerFiveLetters(!isShowPerFiveLetters)}
+          >
+            <div id='checkboxContainer'>
+              <img
+                id='checkboxIcon'
+                src={isShowPerFiveLetters ? filledCheckbox : emptyCheckbox}
+                alt='checkbox icon'
+              />
+
+              <div>
+                Show cipher per 5 letters
+              </div>
+            </div>
+          </button>
+
+          <button
+            onClick={() => loadTxt()}
+          >
+            Load Result to txt
+          </button>
         </div>
-      </button>
 
-      <button
-        onClick={() => loadTxt()}
-      >
-        Load Result to txt
-      </button>
+        {/* ========================================================== */}
 
-      {/* ========================================================== */}
+        <div id='column-section'>
+          <div id='title'>
+            Decipher Part
+          </div>
 
-      <div id='title'>
-        Decipher Part
-      </div>
-
-      {/* Cipher Text */}
-      <div>
-        Cipher Text:
-      </div>
-      <textarea
-        id='inputContainer'
-        value={inputCipherText}
-        onChange={(e) => {
-          setInputCipherText(e.target.value);
-          if (fileInputCipherRef.current) {
-            fileInputCipherRef.current.value = '';
-          }
-        }}
-      />
-      <input
-        ref={fileInputCipherRef}
-        type='file'
-        onChange={readCipherFile}
-      />
-
-      {/* Key Text */}
-      {(
-        cipherMode === 'vigenere' 
-        || cipherMode === 'extendedVigenere'
-        || cipherMode === 'autoVigenere'
-        || cipherMode === 'playfair'
-      ) && (
-        <React.Fragment>
+          {/* Cipher Text */}
           <div>
-            Key:
+            Cipher Text:
           </div>
           <textarea
             id='inputContainer'
-            value={inputDecipherKey}
+            value={inputCipherText}
             onChange={(e) => {
-              setInputDecipherKey(e.target.value);
-            }}
-          />
-        </React.Fragment>
-      )}
-
-      {(cipherMode === 'affine') && (
-        <React.Fragment>
-          <div>
-            m:
-          </div>
-          <input
-            value={affineDecipherM}
-            type='number'
-            onChange={(e) => setAffineDecipherM(e.target.value)}
-          />
-          <div>
-            b:
-          </div>
-          <input
-            value={affineDecipherB}
-            type='number'
-            onChange={(e) => setAffineDecipherB(e.target.value)}
-          />
-        </React.Fragment>
-      )}
-
-      {(cipherMode === 'hill') && (
-        <React.Fragment>
-          <div>
-            key:
-          </div>
-          <div id={decipherHillKeySize === 2 ? "grid-container-2" : "grid-container-3"}>
-            {[...Array(decipherHillKeySize*decipherHillKeySize)].map((_, idx) => {
-              const x = Math.floor(idx / decipherHillKeySize);
-              const y = idx % decipherHillKeySize;
-              const changeKey = (newValue) => {
-                let key = JSON.parse(JSON.stringify(decipherHillKey));
-                key[x][y] = newValue;
-                return key;
+              setIsHillDecipherErrorVisible(false);
+              setInputCipherText(e.target.value);
+              if (fileInputCipherRef.current) {
+                fileInputCipherRef.current.value = '';
               }
+            }}
+          />
+          <input
+            ref={fileInputCipherRef}
+            type='file'
+            onChange={readCipherFile}
+          />
 
-              return (
-                <input
-                  key={`grid-idx-${idx + 1}`}
-                  value={decipherHillKey[x][y]}
-                  type='number'
-                  onChange={(e) => setDecipherHillKey(changeKey(parseInt(e.target.value)))}
-                />
-              );
-            })}
+          {isHillDecipherErrorVisible && (
+            <div id='error-hill'>
+              determinant kunci harus tidak nol dan koprima dengan 256
+            </div>
+          )}
+
+          {/* Key Text */}
+          {(
+            cipherMode === 'vigenere' 
+            || cipherMode === 'extendedVigenere'
+            || cipherMode === 'autoVigenere'
+            || cipherMode === 'playfair'
+          ) && (
+            <React.Fragment>
+              <div>
+                Key:
+              </div>
+              <textarea
+                id='inputContainer'
+                value={inputDecipherKey}
+                onChange={(e) => {
+                  setInputDecipherKey(e.target.value);
+                }}
+              />
+            </React.Fragment>
+          )}
+
+          {(cipherMode === 'affine') && (
+            <React.Fragment>
+              <div>
+                m:
+              </div>
+              <input
+                value={affineDecipherM}
+                type='number'
+                onChange={(e) => setAffineDecipherM(e.target.value)}
+              />
+              <div>
+                b:
+              </div>
+              <input
+                value={affineDecipherB}
+                type='number'
+                onChange={(e) => setAffineDecipherB(e.target.value)}
+              />
+            </React.Fragment>
+          )}
+
+          {(cipherMode === 'hill') && (
+            <React.Fragment>
+              <div>
+                key:
+              </div>
+              <div id={decipherHillKeySize === 2 ? "grid-container-2" : "grid-container-3"}>
+                {[...Array(decipherHillKeySize*decipherHillKeySize)].map((_, idx) => {
+                  const x = Math.floor(idx / decipherHillKeySize);
+                  const y = idx % decipherHillKeySize;
+                  const changeKey = (newValue) => {
+                    let key = JSON.parse(JSON.stringify(decipherHillKey));
+                    key[x][y] = newValue;
+                    return key;
+                  }
+
+                  return (
+                    <input
+                      key={`grid-idx-${idx + 1}`}
+                      value={decipherHillKey[x][y]}
+                      type='number'
+                      onChange={(e) => {
+                        setIsHillDecipherErrorVisible(false);
+                        setDecipherHillKey(changeKey(parseInt(e.target.value)))
+                      }}
+                    />
+                  );
+                })}
+              </div>
+
+              <button
+                id='checkboxButton'
+                onClick={() => {
+                  decipherHillKeySize === 3 && setDecipherHillKey(dummyHillKey2);
+                  setDecipherHillKeySize(2);
+                }}
+              >
+                <div id='checkboxContainer'>
+                  <img
+                    id='checkboxIcon'
+                    src={decipherHillKeySize === 2 ? filledCheckbox : emptyCheckbox}
+                    alt='checkbox icon'
+                  />
+
+                  <div>
+                    Use key of size 2x2
+                  </div>
+                </div>
+              </button>
+              <button
+                id='checkboxButton'
+                onClick={() => {
+                  decipherHillKeySize === 2 && setDecipherHillKey(dummyHillKey3);
+                  setDecipherHillKeySize(3);
+                }}
+              >
+                <div id='checkboxContainer'>
+                  <img
+                    id='checkboxIcon'
+                    src={decipherHillKeySize === 3 ? filledCheckbox : emptyCheckbox}
+                    alt='checkbox icon'
+                  />
+
+                  <div>
+                    Use key of size 3x3
+                  </div>
+                </div>
+              </button>
+            </React.Fragment>
+          )}
+
+          {/* Cipher Text */}
+          <div>
+            Deciphered Text:  
           </div>
-
-          <button
-            id='checkboxButton'
-            onClick={() => {
-              decipherHillKeySize === 3 && setDecipherHillKey(dummyHillKey2);
-              setDecipherHillKeySize(2);
-            }}
-          >
-            <div id='checkboxContainer'>
-              <img
-                id='checkboxIcon'
-                src={decipherHillKeySize === 2 ? filledCheckbox : emptyCheckbox}
-                alt='checkbox icon'
-              />
-
-              <div>
-                Use key of size 2x2
-              </div>
-            </div>
-          </button>
-          <button
-            id='checkboxButton'
-            onClick={() => {
-              decipherHillKeySize === 2 && setDecipherHillKey(dummyHillKey3);
-              setDecipherHillKeySize(3);
-            }}
-          >
-            <div id='checkboxContainer'>
-              <img
-                id='checkboxIcon'
-                src={decipherHillKeySize === 3 ? filledCheckbox : emptyCheckbox}
-                alt='checkbox icon'
-              />
-
-              <div>
-                Use key of size 3x3
-              </div>
-            </div>
-          </button>
-        </React.Fragment>
-      )}
-
-      {/* Cipher Text */}
-      <div>
-        Deciphered Text:  
-      </div>
-      <div id='resultTextContainer'>
-        {decipherResult()}
+          <div id='resultTextContainer'>
+            {decipherResult()}
+          </div>
+        </div>
       </div>
     </div>
   );

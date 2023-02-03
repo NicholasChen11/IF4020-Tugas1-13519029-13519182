@@ -1,9 +1,43 @@
+#root {
+  display: flex;
+  flex-direction: column;
+}
+
 .App {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 30px;
+}
+
+#choose-cipher-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 2px solid black;
+  border-radius: 5px;
+  padding: 15px 25px 20px;
+  margin-top: 50px;
+}
+
+#choose-cipher-text {
+  margin-bottom: 12px;
+}
+
+#body {
+  flex: 1;
+  align-self: stretch;
+  display: flex;
+  flex-direction: row;
+  margin-top: 50px;
+}
+
+#column-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 #title {
@@ -14,18 +48,22 @@
 
 #inputContainer {
   display: block;
-  width: 300px;
-  height: 60px;
+  width: 500px;
+  height: 100px;
   border-radius: 7px;
   padding: 15px 25px;
+}
+
+#error-hill {
+  color: red;
 }
 
 #resultTextContainer {
   background-color: lightblue;
   border-radius: 7px;
   padding: 15px 25px;
-  width: 300px;
-  height: 60px;
+  width: 500px;
+  height: 100px;
   overflow-y: scroll;
   overflow-wrap: break-word;
 }

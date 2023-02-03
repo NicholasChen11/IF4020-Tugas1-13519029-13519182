@@ -470,30 +470,42 @@ const hillCipher = ({text, key}) => {
   const keySize = key.length;
   let result = '';
 
-  for (let idx = 0; idx < text.length; idx = idx + keySize) {
-    const currentSubstring = text.slice(idx, idx + keySize);
-    let vector = []; 
-
-    // convert to charCode
-    for (let i = 0; i < currentSubstring.length; i++) {
-      vector.push((currentSubstring[i]).charCodeAt());
-    };
-
-    // fill remaining if still empty (for case: last batch)
-    while (vector.length < keySize) {
-      vector.push(255);
+  try {
+    const D = det(key);
+    if (D === 0) {
+      throw 'determinant must not be zero';
+    }
+    if (!coprime(D, 256)) {
+      throw 'determinant must be coprime with 256';
     }
 
-    const resultVector = matrixMultiply(key, vector);
-
-    // mod 256 every element and convert code back to char
-    for (let i = 0; i < resultVector.length; i++) {
-      resultVector[i] = resultVector[i] % 256;
-      result = result.concat(String.fromCharCode(resultVector[i]));
-    };
+    for (let idx = 0; idx < text.length; idx = idx + keySize) {
+      const currentSubstring = text.slice(idx, idx + keySize);
+      let vector = []; 
+  
+      // convert to charCode
+      for (let i = 0; i < currentSubstring.length; i++) {
+        vector.push((currentSubstring[i]).charCodeAt());
+      };
+  
+      // fill remaining if still empty (for case: last batch)
+      while (vector.length < keySize) {
+        vector.push(255);
+      }
+  
+      const resultVector = matrixMultiply(key, vector);
+  
+      // mod 256 every element and convert code back to char
+      for (let i = 0; i < resultVector.length; i++) {
+        resultVector[i] = resultVector[i] % 256;
+        result = result.concat(String.fromCharCode(resultVector[i]));
+      };
+    }
+  
+    return result;
+  } catch (e) {
+    console.log('Error Hill Cipher: ', e);
   }
-
-  return result;
 };
 
 const hillDecipher = ({text, key}) => {
@@ -557,7 +569,7 @@ const hillDecipher = ({text, key}) => {
 
     return result;
   } catch (e) {
-    console.log('Error: ', e);
+    console.log('Error Hill Decipher: ', e);
   }
 };
 
