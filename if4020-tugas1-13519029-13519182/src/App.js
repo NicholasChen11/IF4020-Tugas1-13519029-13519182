@@ -48,6 +48,7 @@ const App = () => {
   const [affineDecipherB, setAffineDecipherB] = useState(0);
   const [decipherHillKeySize, setDecipherHillKeySize] = useState(2);
   const [decipherHillKey, setDecipherHillKey] = useState(dummyHillKey2);
+  const [isPlayfairError, setIsPlayfairError] = useState(false);
   const [isHillDecipherErrorVisible, setIsHillDecipherErrorVisible] = useState(false);
 
   const cipher = useCipher(cipherMode);
@@ -98,10 +99,17 @@ const App = () => {
       || cipherMode === 'autoVigenere'
       || cipherMode === 'playfair'
     ) {
-      return decipher({
+      const result = decipher({
         text: removeNonalphabet(inputCipherText),
         key: inputDecipherKey || 'a',
       });
+
+      if (result) {
+        return result;
+      }
+      if (cipherMode === 'playfair' && !isPlayfairError) {
+        setIsPlayfairError(true);
+      }
     } else if (cipherMode === 'extendedVigenere') {
       return decipher({
         text: inputCipherText,
@@ -385,6 +393,7 @@ const App = () => {
             value={inputCipherText}
             onChange={(e) => {
               setIsHillDecipherErrorVisible(false);
+              setIsPlayfairError(false)
               setInputCipherText(e.target.value);
               if (fileInputCipherRef.current) {
                 fileInputCipherRef.current.value = '';
@@ -400,6 +409,12 @@ const App = () => {
           {isHillDecipherErrorVisible && (
             <div id='error-hill'>
               determinant kunci harus tidak nol dan koprima dengan 256
+            </div>
+          )}
+
+          {isPlayfairError && (
+            <div id='error-hill'>
+              panjang cipher text playfair harus genap
             </div>
           )}
 

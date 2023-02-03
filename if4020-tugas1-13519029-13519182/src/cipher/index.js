@@ -380,6 +380,8 @@ const playfairCipher = ({text, key}) => {
 
 const playfairReverseRule = (firstChar, secondChar, keyTable) => {
   // search coordinate for each char in keyTable
+  console.log("Nicho 2", alphabetToNum[firstChar])
+  console.log("Nicho 2", keyTable)
   const firstCharPoint = searchInTable(alphabetToNum[firstChar], keyTable);
   const secondCharPoint = searchInTable(alphabetToNum[secondChar], keyTable);
   let firstResultPoint = [];
@@ -447,21 +449,29 @@ const removeDummyX = (text) => {
 };
 
 const playfairDecipher = ({text, key}) => {
-  const lowercasedText = text.toLowerCase();
-  const lowercasedKey = key.toLowerCase();
-  const keyTable = generateKeyTable(lowercasedKey);
-  let result = '';
-
-  for (let idx = 0; idx < lowercasedText.length; idx = idx + 2) {
-    const firstChar = lowercasedText[idx];
-    const secondChar = lowercasedText[idx+1];
+  try {
+    if (text.length % 2 === 1) {
+      throw "length of playfair cipher text must be even";
+    }
     
-    result = result.concat(playfairReverseRule(firstChar, secondChar, keyTable));
+    const lowercasedText = text.toLowerCase();
+    const lowercasedKey = key.toLowerCase();
+    const keyTable = generateKeyTable(lowercasedKey);
+    let result = '';
+
+    for (let idx = 0; idx < lowercasedText.length; idx = idx + 2) {
+      const firstChar = lowercasedText[idx];
+      const secondChar = lowercasedText[idx+1];
+      console.log("Nicho lewat")
+      result = result.concat(playfairReverseRule(firstChar, secondChar, keyTable));
+    }
+  
+    result = removeDummyX(result);
+  
+    return result;
+  } catch (e) {
+    console.log("Error: ", e);
   }
-
-  result = removeDummyX(result);
-
-  return result;
 };
 
 // Hill Part
